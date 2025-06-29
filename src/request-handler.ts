@@ -283,8 +283,3 @@ export async function failedRequestHandler(request: Request, err: Error, crawler
         sendResponseIfFinished(responseId);
     }
 }
-
-// @ts-expect-error
-if (process.env.APIFY_HEADLESS === '1') {
-    // ... existing code ...
-}

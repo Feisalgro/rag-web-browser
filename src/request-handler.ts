@@ -1,10 +1,6 @@
-// @ts-expect-error
 import { Actor } from 'apify';
-// @ts-expect-error
 import { load } from 'cheerio';
-// @ts-expect-error
 import { type CheerioCrawlingContext, htmlToText, log, type PlaywrightCrawlingContext, type Request, sleep } from 'crawlee';
-// @ts-expect-error
 import type { CheerioAPI } from 'cheerio';
 
 import { ContentCrawlerStatus, ContentCrawlerTypes } from './const.js';
@@ -17,7 +13,6 @@ import { discoverLinks, type LinkDiscoveryOptions } from './website-content-craw
 
 let ACTOR_TIMEOUT_AT: number | undefined;
 try {
-    // @ts-expect-error
     ACTOR_TIMEOUT_AT = process.env.ACTOR_TIMEOUT_AT ? new Date(process.env.ACTOR_TIMEOUT_AT).getTime() : undefined;
 } catch {
     ACTOR_TIMEOUT_AT = undefined;
@@ -55,7 +50,6 @@ function checkTimeoutAndCancelRequest(request: Request, responseId: string) {
  * Always waits if the Actor is in the STANDBY_MODE.
  */
 export function hasTimeLeftToTimeout(time: number) {
-    // @ts-expect-error
     if (process.env.STANDBY_MODE) return true;
     if (!ACTOR_TIMEOUT_AT) return true;
 

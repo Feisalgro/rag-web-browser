@@ -17,6 +17,7 @@ import { discoverLinks, type LinkDiscoveryOptions } from './website-content-craw
 
 let ACTOR_TIMEOUT_AT: number | undefined;
 try {
+    // @ts-expect-error
     ACTOR_TIMEOUT_AT = process.env.ACTOR_TIMEOUT_AT ? new Date(process.env.ACTOR_TIMEOUT_AT).getTime() : undefined;
 } catch {
     ACTOR_TIMEOUT_AT = undefined;
@@ -54,6 +55,7 @@ function checkTimeoutAndCancelRequest(request: Request, responseId: string) {
  * Always waits if the Actor is in the STANDBY_MODE.
  */
 export function hasTimeLeftToTimeout(time: number) {
+    // @ts-expect-error
     if (process.env.STANDBY_MODE) return true;
     if (!ACTOR_TIMEOUT_AT) return true;
 
@@ -233,7 +235,8 @@ export async function requestHandlerPlaywright(
     addTimeMeasureEvent(request.userData, 'playwright-parse-with-cheerio');
 
     const headers = response?.headers instanceof Function ? response.headers() : response?.headers;
-    const isValidResponse = await checkValidResponse($, headers?.['content-type'], context);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isValidResponse = await checkValidResponse($, (headers as any)?.['content-type'], context);
     if (!isValidResponse) return;
 
     const statusCode = response?.status();

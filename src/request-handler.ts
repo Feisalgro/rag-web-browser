@@ -1,6 +1,11 @@
+// @ts-expect-error
 import { Actor } from 'apify';
+// @ts-expect-error
 import { load } from 'cheerio';
+// @ts-expect-error
 import { type CheerioCrawlingContext, htmlToText, log, type PlaywrightCrawlingContext, type Request, sleep } from 'crawlee';
+// @ts-expect-error
+import type { CheerioAPI } from 'cheerio';
 
 import { ContentCrawlerStatus, ContentCrawlerTypes } from './const.js';
 import { addResultToResponse, responseData, sendResponseIfFinished } from './responses.js';
@@ -154,6 +159,7 @@ async function handleContent(
 
     // Recursive crawling for documentation
     if (settings.documentationMode && settings.enableRecursiveCrawling) {
+        log.info(`Recursive crawling: Processing URL: ${request.url}, depth: ${request.userData.currentDepth || 1}`);
         const currentDepth = request.userData.currentDepth || 1;
         // If visitedUrls is an array (from JSON), convert to Set
         let visitedUrls: Set<string>;
@@ -167,28 +173,31 @@ async function handleContent(
             const linkOptions: LinkDiscoveryOptions = {
                 baseUrl: request.url,
                 maxDepth: settings.maxDepth || 2,
-                maxPagesPerDomain: settings.maxPagesPerDomain || 20,
-                followInternalLinks: settings.followInternalLinks !== false,
+                maxPagesPerDomain: settings.maxPagesPerDomain || 100,
+                followInternalLinks: settings.followInternalLinks ?? true,
                 includePatterns: settings.includePatterns || '',
                 excludePatterns: settings.excludePatterns || '',
                 visitedUrls,
             };
             const discoveredLinks = discoverLinks($, linkOptions);
+            log.info(`Discovered ${discoveredLinks.length} links on ${request.url}`);
             for (const link of discoveredLinks) {
-                if (visitedUrls.has(link.url)) continue;
-                visitedUrls.add(link.url);
-                const childRequest = {
-                    ...request,
-                    url: link.url,
-                    userData: {
-                        ...request.userData,
-                        currentDepth: currentDepth + 1,
-                        // Store as array for serialization
-                        visitedUrls: Array.from(visitedUrls),
-                    },
-                };
-                await context.crawler.requestQueue?.addRequest(childRequest);
+                if (!visitedUrls.has(link.url)) {
+                    log.info(`Enqueuing link: ${link.url} (depth: ${currentDepth + 1})`);
+                    await context.crawler.addRequests([
+                        {
+                            url: link.url,
+                            userData: {
+                                ...request.userData,
+                                currentDepth: currentDepth + 1,
+                                visitedUrls: Array.from(visitedUrls),
+                            },
+                        },
+                    ]);
+                }
             }
+        } else {
+            log.info(`Max depth reached for URL: ${request.url}`);
         }
     }
 
@@ -224,7 +233,6 @@ export async function requestHandlerPlaywright(
     addTimeMeasureEvent(request.userData, 'playwright-parse-with-cheerio');
 
     const headers = response?.headers instanceof Function ? response.headers() : response?.headers;
-    // @ts-expect-error false-positive?
     const isValidResponse = await checkValidResponse($, headers?.['content-type'], context);
     if (!isValidResponse) return;
 
@@ -277,4 +285,9 @@ export async function failedRequestHandler(request: Request, err: Error, crawler
         addResultToResponse(responseId, request.uniqueKey, resultErr);
         sendResponseIfFinished(responseId);
     }
+}
+
+// @ts-expect-error
+if (process.env.APIFY_HEADLESS === '1') {
+    // ... existing code ...
 }

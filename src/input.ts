@@ -86,6 +86,14 @@ async function processInputInternal(
         autoscaledPoolOptions: { desiredConcurrency: 1 },
     };
 
+    // Ensure includePatterns and excludePatterns are strings (comma-separated)
+    if (Array.isArray(includePatterns)) {
+        input.includePatterns = includePatterns.join(',');
+    }
+    if (Array.isArray(excludePatterns)) {
+        input.excludePatterns = excludePatterns.join(',');
+    }
+
     const contentScraperSettings: ContentScraperSettings = {
         debugMode,
         dynamicContentWaitSecs,
@@ -95,13 +103,13 @@ async function processInputInternal(
         readableTextCharThreshold,
         removeCookieWarnings,
         removeElementsCssSelector,
-        documentationMode,
-        enableRecursiveCrawling,
-        maxDepth,
-        maxPagesPerDomain,
-        followInternalLinks,
-        includePatterns,
-        excludePatterns,
+        documentationMode: input.documentationMode,
+        enableRecursiveCrawling: input.enableRecursiveCrawling,
+        maxDepth: input.maxDepth,
+        maxPagesPerDomain: input.maxPagesPerDomain,
+        followInternalLinks: input.followInternalLinks,
+        includePatterns: input.includePatterns,
+        excludePatterns: input.excludePatterns,
     };
 
     return { input, searchCrawlerOptions, contentScraperSettings };

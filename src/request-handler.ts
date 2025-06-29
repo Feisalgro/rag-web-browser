@@ -160,7 +160,7 @@ async function handleContent(
         if (Array.isArray(request.userData.visitedUrls)) {
             visitedUrls = new Set(request.userData.visitedUrls);
         } else {
-            visitedUrls = request.userData.visitedUrls || new Set();
+            visitedUrls = new Set();
         }
         visitedUrls.add(request.url);
         if (currentDepth < (settings.maxDepth || 2)) {
@@ -169,8 +169,8 @@ async function handleContent(
                 maxDepth: settings.maxDepth || 2,
                 maxPagesPerDomain: settings.maxPagesPerDomain || 20,
                 followInternalLinks: settings.followInternalLinks !== false,
-                includePatterns: settings.includePatterns || [],
-                excludePatterns: settings.excludePatterns || [],
+                includePatterns: settings.includePatterns || '',
+                excludePatterns: settings.excludePatterns || '',
                 visitedUrls,
             };
             const discoveredLinks = discoverLinks($, linkOptions);
@@ -187,7 +187,7 @@ async function handleContent(
                         visitedUrls: Array.from(visitedUrls),
                     },
                 };
-                await context.crawler.requestQueue.addRequest(childRequest);
+                await context.crawler.requestQueue?.addRequest(childRequest);
             }
         }
     }

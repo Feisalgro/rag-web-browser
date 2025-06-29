@@ -35,8 +35,8 @@ export type Input = {
     maxDepth: number;
     maxPagesPerDomain: number;
     followInternalLinks: boolean;
-    includePatterns: string;
-    excludePatterns: string;
+    includePatterns?: string;
+    excludePatterns?: string;
     documentationMode: boolean;
 };
 
@@ -91,8 +91,8 @@ export interface ContentScraperSettings {
     maxDepth?: number;
     maxPagesPerDomain?: number;
     followInternalLinks?: boolean;
-    includePatterns?: string[];
-    excludePatterns?: string[];
+    includePatterns?: string;
+    excludePatterns?: string;
 }
 
 export type SearchCrawlerUserData = {
@@ -111,6 +111,8 @@ export type ContentCrawlerUserData = {
     searchResult?: OrganicResult;
     contentCrawlerKey?: string;
     contentScraperSettings: ContentScraperSettings;
+    currentDepth?: number;
+    visitedUrls?: string[];
 };
 
 export type Output = {

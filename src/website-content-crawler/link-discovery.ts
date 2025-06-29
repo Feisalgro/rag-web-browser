@@ -6,8 +6,8 @@ export interface LinkDiscoveryOptions {
     maxDepth: number;
     maxPagesPerDomain: number;
     followInternalLinks: boolean;
-    includePatterns: string[];
-    excludePatterns: string[];
+    includePatterns: string;
+    excludePatterns: string;
     visitedUrls: Set<string>;
 }
 
@@ -60,21 +60,25 @@ export function discoverLinks($: CheerioAPI, options: LinkDiscoveryOptions): Dis
     return links;
 }
 
-function matchesPatterns(path: string, includePatterns: string[], excludePatterns: string[]): boolean {
+function matchesPatterns(path: string, includePatterns: string, excludePatterns: string): boolean {
+    // Convert comma-separated strings to arrays
+    const includeArray = includePatterns ? includePatterns.split(',').map(p => p.trim()).filter(Boolean) : [];
+    const excludeArray = excludePatterns ? excludePatterns.split(',').map(p => p.trim()).filter(Boolean) : [];
+    
     // Check exclude patterns first
-    for (const pattern of excludePatterns) {
+    for (const pattern of excludeArray) {
         if (matchesGlobPattern(path, pattern)) {
             return false;
         }
     }
     
     // If no include patterns, include everything
-    if (includePatterns.length === 0) {
+    if (includeArray.length === 0) {
         return true;
     }
     
     // Check include patterns
-    for (const pattern of includePatterns) {
+    for (const pattern of includeArray) {
         if (matchesGlobPattern(path, pattern)) {
             return true;
         }

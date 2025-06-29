@@ -293,10 +293,45 @@ function validateAndFillInput(input: Partial<Input>, standbyInit: boolean): Inpu
         input.debugMode = inputSchema.properties.debugMode.default;
     }
 
-    // Documentation crawling defaults
+    // Documentation mode
+    if (input.documentationMode === undefined) {
+        input.documentationMode = inputSchema.properties.documentationMode.default;
+    }
+
+    // Enable recursive crawling
+    if (input.enableRecursiveCrawling === undefined) {
+        input.enableRecursiveCrawling = inputSchema.properties.enableRecursiveCrawling.default;
+    }
+
+    // Max depth
+    if (input.maxDepth === undefined) {
+        input.maxDepth = inputSchema.properties.maxDepth.default;
+    }
+
+    // Max pages per domain
+    if (input.maxPagesPerDomain === undefined) {
+        input.maxPagesPerDomain = inputSchema.properties.maxPagesPerDomain.default;
+    }
+
+    // Follow internal links
+    if (input.followInternalLinks === undefined) {
+        input.followInternalLinks = inputSchema.properties.followInternalLinks.default;
+    }
+
+    // Include patterns
+    if (input.includePatterns === undefined) {
+        input.includePatterns = inputSchema.properties.includePatterns.default;
+    }
+
+    // Exclude patterns
+    if (input.excludePatterns === undefined) {
+        input.excludePatterns = inputSchema.properties.excludePatterns.default;
+    }
+
+    // Documentation mode enhancements
     if (input.documentationMode) {
         // Enhanced selectors for documentation sites
-        input.removeElementsCssSelector = [
+        const docSelectors = [
             input.removeElementsCssSelector,
             '.sidebar, .navigation, .toc, .breadcrumb',
             '.search-box, .search-results',
@@ -308,23 +343,21 @@ function validateAndFillInput(input: Partial<Input>, standbyInit: boolean): Inpu
             '.version-selector, .language-selector',
             '.edit-button, .contribute-link'
         ].filter(Boolean).join(', ');
-        if (input.enableRecursiveCrawling === undefined) {
+        
+        input.removeElementsCssSelector = docSelectors;
+        
+        // Enable recursive crawling by default in documentation mode
+        if (!input.enableRecursiveCrawling) {
             input.enableRecursiveCrawling = true;
         }
-        if (input.maxDepth === undefined) {
+        
+        // Set reasonable defaults for documentation crawling
+        if (input.maxDepth === 2) {
             input.maxDepth = 3;
         }
-        if (input.maxPagesPerDomain === undefined) {
+        
+        if (input.maxPagesPerDomain === 20) {
             input.maxPagesPerDomain = 50;
-        }
-        if (input.followInternalLinks === undefined) {
-            input.followInternalLinks = true;
-        }
-        if (!input.includePatterns) {
-            input.includePatterns = [];
-        }
-        if (!input.excludePatterns) {
-            input.excludePatterns = ["/blog/**", "/examples/**", "/changelog/**"];
         }
     }
 

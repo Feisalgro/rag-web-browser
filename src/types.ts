@@ -31,13 +31,13 @@ export type Input = {
     removeCookieWarnings: boolean;
     scrapingTool: ScrapingTool;
     // New fields for documentation crawling
-    documentationMode?: boolean;
-    enableRecursiveCrawling?: boolean;
-    maxDepth?: number;
-    maxPagesPerDomain?: number;
-    followInternalLinks?: boolean;
-    includePatterns?: string[];
-    excludePatterns?: string[];
+    enableRecursiveCrawling: boolean;
+    maxDepth: number;
+    maxPagesPerDomain: number;
+    followInternalLinks: boolean;
+    includePatterns: string;
+    excludePatterns: string;
+    documentationMode: boolean;
 };
 
 export type SearchResultType = 'ORGANIC' | 'SUGGESTED';

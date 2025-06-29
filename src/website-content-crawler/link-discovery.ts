@@ -1,7 +1,6 @@
 import type { CheerioAPI } from 'cheerio';
 // @ts-ignore
 import { URL } from 'url';
-// @ts-expect-error
 import { log } from 'apify';
 
 export interface LinkDiscoveryOptions {
@@ -25,7 +24,7 @@ export function discoverLinks($: CheerioAPI, options: LinkDiscoveryOptions): Dis
     const links: DiscoveredLink[] = [];
     const baseUrl = new URL(options.baseUrl);
     const allHrefs: string[] = [];
-    $('a[href]').each((index: number, element: any) => {
+    $('a[href]').each((_: any, element: any) => {
         const href = $(element).attr('href');
         if (!href) return;
         allHrefs.push(href);

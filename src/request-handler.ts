@@ -8,6 +8,7 @@ import type { ContentCrawlerUserData, Output } from './types.js';
 import { addTimeMeasureEvent, isActorStandby, transformTimeMeasuresToRelative } from './utils.js';
 import { processHtml } from './website-content-crawler/html-processing.js';
 import { htmlToMarkdown } from './website-content-crawler/markdown.js';
+import { discoverLinks, type LinkDiscoveryOptions } from './website-content-crawler/link-discovery.js';
 
 let ACTOR_TIMEOUT_AT: number | undefined;
 try {
@@ -150,14 +151,52 @@ async function handleContent(
     if (settings.debugMode) {
         result.crawl.debug = { timeMeasures: transformTimeMeasuresToRelative(request.userData.timeMeasures!) };
     }
-    log.info(`Adding result to the Apify dataset, url: ${request.url}`);
-    await context.pushData(result);
 
-    // Get responseId from the request.userData, which corresponds to the original search request
+    // Recursive crawling for documentation
+    if (settings.documentationMode && settings.enableRecursiveCrawling) {
+        const currentDepth = request.userData.currentDepth || 1;
+        // If visitedUrls is an array (from JSON), convert to Set
+        let visitedUrls: Set<string>;
+        if (Array.isArray(request.userData.visitedUrls)) {
+            visitedUrls = new Set(request.userData.visitedUrls);
+        } else {
+            visitedUrls = request.userData.visitedUrls || new Set();
+        }
+        visitedUrls.add(request.url);
+        if (currentDepth < (settings.maxDepth || 2)) {
+            const linkOptions: LinkDiscoveryOptions = {
+                baseUrl: request.url,
+                maxDepth: settings.maxDepth || 2,
+                maxPagesPerDomain: settings.maxPagesPerDomain || 20,
+                followInternalLinks: settings.followInternalLinks !== false,
+                includePatterns: settings.includePatterns || [],
+                excludePatterns: settings.excludePatterns || [],
+                visitedUrls,
+            };
+            const discoveredLinks = discoverLinks($, linkOptions);
+            for (const link of discoveredLinks) {
+                if (visitedUrls.has(link.url)) continue;
+                visitedUrls.add(link.url);
+                const childRequest = {
+                    ...request,
+                    url: link.url,
+                    userData: {
+                        ...request.userData,
+                        currentDepth: currentDepth + 1,
+                        // Store as array for serialization
+                        visitedUrls: Array.from(visitedUrls),
+                    },
+                };
+                await context.crawler.requestQueue.addRequest(childRequest);
+            }
+        }
+    }
+
     if (responseId) {
         addResultToResponse(responseId, request.uniqueKey, result);
         sendResponseIfFinished(responseId);
     }
+    await context.pushData(result);
 }
 
 export async function requestHandlerPlaywright(

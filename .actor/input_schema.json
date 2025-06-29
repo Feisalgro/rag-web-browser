@@ -132,6 +132,65 @@
             "type": "boolean",
             "description": "If enabled, the Actor will store debugging information into the resulting dataset under the `debug` field.",
             "default": false
+        },
+        "documentationMode": {
+            "title": "Documentation mode",
+            "type": "boolean",
+            "description": "Enable specialized settings for scraping API documentation and technical docs. When enabled, the scraper will follow internal links and crawl related pages.",
+            "default": false,
+            "editor": "checkbox"
+        },
+        "enableRecursiveCrawling": {
+            "title": "Enable recursive crawling",
+            "type": "boolean",
+            "description": "When enabled, the scraper will follow internal links and crawl related pages up to the specified depth.",
+            "default": false,
+            "editor": "checkbox"
+        },
+        "maxDepth": {
+            "title": "Maximum crawl depth",
+            "type": "integer",
+            "description": "Maximum depth for recursive crawling. 1 means only the initial page, 2 means initial page + linked pages, etc.",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 2,
+            "editor": "number"
+        },
+        "maxPagesPerDomain": {
+            "title": "Maximum pages per domain",
+            "type": "integer",
+            "description": "Maximum number of pages to crawl from the same domain to avoid overwhelming the target site.",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20,
+            "editor": "number"
+        },
+        "followInternalLinks": {
+            "title": "Follow internal links",
+            "type": "boolean",
+            "description": "Follow links that point to the same domain as the initial URL.",
+            "default": true,
+            "editor": "checkbox"
+        },
+        "includePatterns": {
+            "title": "Include URL patterns",
+            "type": "array",
+            "description": "URL patterns to include in crawling. Supports glob patterns like '/docs/**' or '/api/**'. Leave empty to include all.",
+            "items": {
+                "type": "string"
+            },
+            "default": [],
+            "editor": "textarea"
+        },
+        "excludePatterns": {
+            "title": "Exclude URL patterns",
+            "type": "array",
+            "description": "URL patterns to exclude from crawling. Supports glob patterns like '/blog/**' or '/examples/**'.",
+            "items": {
+                "type": "string"
+            },
+            "default": ["/blog/**", "/examples/**", "/changelog/**"],
+            "editor": "textarea"
         }
     },
     "required": ["query"]

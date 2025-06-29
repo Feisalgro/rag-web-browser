@@ -67,6 +67,13 @@ async function processInputInternal(
         removeElementsCssSelector,
         htmlTransformer,
         removeCookieWarnings,
+        documentationMode,
+        enableRecursiveCrawling,
+        maxDepth,
+        maxPagesPerDomain,
+        followInternalLinks,
+        includePatterns,
+        excludePatterns,
     } = input;
 
     log.setLevel(debugMode ? log.LEVELS.DEBUG : log.LEVELS.INFO);
@@ -88,6 +95,13 @@ async function processInputInternal(
         readableTextCharThreshold,
         removeCookieWarnings,
         removeElementsCssSelector,
+        documentationMode,
+        enableRecursiveCrawling,
+        maxDepth,
+        maxPagesPerDomain,
+        followInternalLinks,
+        includePatterns,
+        excludePatterns,
     };
 
     return { input, searchCrawlerOptions, contentScraperSettings };
@@ -277,6 +291,41 @@ function validateAndFillInput(input: Partial<Input>, standbyInit: boolean): Inpu
     // Debug mode
     if (input.debugMode === undefined) {
         input.debugMode = inputSchema.properties.debugMode.default;
+    }
+
+    // Documentation crawling defaults
+    if (input.documentationMode) {
+        // Enhanced selectors for documentation sites
+        input.removeElementsCssSelector = [
+            input.removeElementsCssSelector,
+            '.sidebar, .navigation, .toc, .breadcrumb',
+            '.search-box, .search-results',
+            '.advertisement, .ads, .sponsor',
+            '.comment-section, .comments',
+            '.related-posts, .suggestions',
+            '.footer-nav, .footer-links',
+            '.social-share, .share-buttons',
+            '.version-selector, .language-selector',
+            '.edit-button, .contribute-link'
+        ].filter(Boolean).join(', ');
+        if (input.enableRecursiveCrawling === undefined) {
+            input.enableRecursiveCrawling = true;
+        }
+        if (input.maxDepth === undefined) {
+            input.maxDepth = 3;
+        }
+        if (input.maxPagesPerDomain === undefined) {
+            input.maxPagesPerDomain = 50;
+        }
+        if (input.followInternalLinks === undefined) {
+            input.followInternalLinks = true;
+        }
+        if (!input.includePatterns) {
+            input.includePatterns = [];
+        }
+        if (!input.excludePatterns) {
+            input.excludePatterns = ["/blog/**", "/examples/**", "/changelog/**"];
+        }
     }
 
     return input as Input;

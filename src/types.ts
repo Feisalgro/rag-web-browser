@@ -30,6 +30,14 @@ export type Input = {
     htmlTransformer: string;
     removeCookieWarnings: boolean;
     scrapingTool: ScrapingTool;
+    // New fields for documentation crawling
+    documentationMode?: boolean;
+    enableRecursiveCrawling?: boolean;
+    maxDepth?: number;
+    maxPagesPerDomain?: number;
+    followInternalLinks?: boolean;
+    includePatterns?: string[];
+    excludePatterns?: string[];
 };
 
 export type SearchResultType = 'ORGANIC' | 'SUGGESTED';
@@ -77,6 +85,14 @@ export interface ContentScraperSettings {
     readableTextCharThreshold: number;
     removeCookieWarnings?: boolean;
     removeElementsCssSelector?: string;
+    // New fields for recursive crawling
+    documentationMode?: boolean;
+    enableRecursiveCrawling?: boolean;
+    maxDepth?: number;
+    maxPagesPerDomain?: number;
+    followInternalLinks?: boolean;
+    includePatterns?: string[];
+    excludePatterns?: string[];
 }
 
 export type SearchCrawlerUserData = {

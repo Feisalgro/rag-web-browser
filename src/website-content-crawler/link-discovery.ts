@@ -1,5 +1,8 @@
 import type { CheerioAPI } from 'cheerio';
+// @ts-ignore
 import { URL } from 'url';
+// @ts-expect-error
+import { log } from 'apify';
 
 export interface LinkDiscoveryOptions {
     baseUrl: string;
@@ -21,42 +24,43 @@ export interface DiscoveredLink {
 export function discoverLinks($: CheerioAPI, options: LinkDiscoveryOptions): DiscoveredLink[] {
     const links: DiscoveredLink[] = [];
     const baseUrl = new URL(options.baseUrl);
-    
-    $('a[href]').each((_, element) => {
+    const allHrefs: string[] = [];
+    $('a[href]').each((index: number, element: any) => {
         const href = $(element).attr('href');
         if (!href) return;
-        
-        try {
-            const absoluteUrl = new URL(href, baseUrl.origin);
-            const relativePath = absoluteUrl.pathname;
-            
-            // Check if it's an internal link
-            const isInternal = absoluteUrl.hostname === baseUrl.hostname;
-            
-            if (!isInternal && !options.followInternalLinks) return;
-            
-            // Check include/exclude patterns
-            if (!matchesPatterns(relativePath, options.includePatterns, options.excludePatterns)) {
-                return;
-            }
-            
-            // Skip if already visited
-            if (options.visitedUrls.has(absoluteUrl.href)) return;
-            
-            // Check domain limit
-            if (isInternal && options.visitedUrls.size >= options.maxPagesPerDomain) return;
-            
-            links.push({
-                url: absoluteUrl.href,
-                title: $(element).text().trim() || absoluteUrl.pathname,
-                depth: 1, // Will be updated by caller
-                isInternal
-            });
-        } catch (error) {
-            // Skip invalid URLs
-        }
+        allHrefs.push(href);
     });
-    
+    log.info(`Found ${allHrefs.length} <a href> links on ${options.baseUrl}`);
+    for (const href of allHrefs) {
+        let url: string;
+        try {
+            url = new URL(href, baseUrl).toString();
+        } catch {
+            log.debug(`Skipping invalid URL: ${href}`);
+            continue;
+        }
+        // Pattern matching
+        const path = new URL(url).pathname;
+        const includeArray = options.includePatterns ? options.includePatterns.split(',').map(p => p.trim()).filter(Boolean) : [];
+        const excludeArray = options.excludePatterns ? options.excludePatterns.split(',').map(p => p.trim()).filter(Boolean) : [];
+        let included = true;
+        if (includeArray.length > 0) {
+            included = includeArray.some(pattern => path.startsWith(pattern.replace(/\*\*$/, '')));
+        }
+        if (excludeArray.length > 0 && excludeArray.some(pattern => path.startsWith(pattern.replace(/\*\*$/, '')))) {
+            included = false;
+        }
+        log.info(`Link: ${url} | Path: ${path} | Included: ${included}`);
+        if (!included) continue;
+        if (options.visitedUrls.has(url)) continue;
+        const isInternal = url.startsWith(baseUrl.origin);
+        links.push({
+            url,
+            title: '',
+            depth: 0,
+            isInternal,
+        });
+    }
     return links;
 }
 
